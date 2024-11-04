@@ -12,6 +12,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -20,17 +22,20 @@ public class ArticleServiceImpl implements ArticleServices {
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final NLProcessor nlProcessor;
 
-    public ArticleServiceImpl(ArticleRepository articleRepository, UserRepository userRepository, ModelMapper modelMapper) {
+    public ArticleServiceImpl(ArticleRepository articleRepository, UserRepository userRepository, ModelMapper modelMapper, NLProcessor nlProcessor) {
         this.articleRepository = articleRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
+        this.nlProcessor = nlProcessor;
     }
 
     @RabbitListener(queues = "article-approval")
     @Override
-    public ArticleProcessResp CreateArticle(ArticleDto articleDto) {
+    public ArticleProcessResp CreateArticle(ArticleDto articleDto) throws IOException {
         ArticleProcessResp condition = ProcessArticles(articleDto);
+
 
         if (condition.getCondition() && condition.getArticleStatus() == ArticleStatus.APPROVED) {
             userRepository.findById(articleDto.getUserId()).ifPresent(user -> {
@@ -44,22 +49,14 @@ public class ArticleServiceImpl implements ArticleServices {
     }
 
     @Override
-    public ArticleProcessResp ProcessArticles(ArticleDto articleDto) {
+    public ArticleProcessResp ProcessArticles(ArticleDto articleDto) throws IOException {
         ArticleProcessResp articleProcessResp = new ArticleProcessResp();
-        List<String> swearWords = UtilsClass.WordLists();
-
-        boolean containsSwearWords = swearWords.stream().anyMatch(articleDto.getContent()::contains);
-
-        if (containsSwearWords) {
-            articleProcessResp.setMessage("Reason to reject is because of swear words");
-            articleProcessResp.setArticleStatus(ArticleStatus.REJECTED);
-            articleProcessResp.setCondition(false);
-        } else {
-            articleProcessResp.setMessage("");
-            articleProcessResp.setArticleStatus(ArticleStatus.APPROVED);
-            articleProcessResp.setCondition(true);
-        }
-
+        String[] sentences = nlProcessor.SentenceProcessing(articleDto.getContent());
+        String[][] tokens = nlProcessor.TokenProcessing(sentences);
+        boolean condition = nlProcessor.DecisionMaking(tokens);
+        articleProcessResp.setCondition(condition);
+        articleProcessResp.setTokens(tokens);
         return articleProcessResp;
     }
+
 }

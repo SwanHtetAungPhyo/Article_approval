@@ -14,4 +14,5 @@ public class ArticleProcessResp {
     private  String message;
     private ArticleStatus articleStatus;
     private Boolean condition;
+    private String[][] tokens;
 }

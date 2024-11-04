@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 
 @RestController
 @RequestMapping("/api/v1/articles")
@@ -28,7 +30,7 @@ public class ArticleController {
     @PostMapping("")
     public ResponseEntity<?> HandleArticleCreate(
             @RequestBody ArticleDto articleDto
-            ){
+            ) throws IOException {
         ArticleProcessResp decision = articleService.CreateArticle(articleDto);
 
         if(decision.getCondition() && decision.getArticleStatus() == ArticleStatus.APPROVED){
