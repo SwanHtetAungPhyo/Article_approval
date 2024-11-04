@@ -13,6 +13,9 @@ import lombok.Setter;
 public class ArticleProcessResp {
     private  String message;
     private ArticleStatus articleStatus;
-    private Boolean condition;
-    private String[][] tokens;
+    private boolean condition;
+
+    public boolean getCondition(){
+        return this.condition;
+    }
 }

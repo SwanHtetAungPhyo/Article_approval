@@ -37,7 +37,7 @@ services:
       - 'RABBITMQ_DEFAULT_PASS=secret'
       - 'RABBITMQ_DEFAULT_USER=myuser'
     ports:
-      - '5672:5672'
+      - "5672:5672"
 
 volumes:
   db_data:

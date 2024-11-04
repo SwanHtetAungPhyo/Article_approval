@@ -2,6 +2,7 @@ package com.swanhtetaungphyo.article_approval.services;
 
 
 import com.swanhtetaungphyo.article_approval.contract.NLPServices;
+import com.swanhtetaungphyo.article_approval.utils.InternalResponse;
 import com.swanhtetaungphyo.article_approval.utils.ResourceLoader;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -19,6 +20,16 @@ import java.util.HashSet;
 
 @Component
 public class NLProcessor implements NLPServices {
+    private static final HashSet<String> hashSet;
+
+    static {
+        try {
+            hashSet = ResourceLoader.LoadSwearWordFromFile();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final Logger logger = LogManager.getLogger();
 
     @Override
@@ -66,19 +77,20 @@ public class NLProcessor implements NLPServices {
     }
 
     @Override
-    public boolean DecisionMaking(String[][] tokens) throws FileNotFoundException {
-        HashSet<String> hashSet = ResourceLoader.LoadSwearWordFromFile();
+    public InternalResponse DecisionMaking(String[][] tokens) {
+
         for(String[] tokensArray : tokens){
-            for(String token : tokensArray){
-                String clearToken = token.toLowerCase().replaceAll("[^a-zA-Z]", "");
-                if(hashSet.contains(token)){
-                    System.out.println("Swear word detected: " + clearToken);
+            for(String clearToken : tokensArray){
+                if(hashSet.contains(clearToken.toLowerCase())){
+                    InternalResponse response = new InternalResponse(clearToken,false);
                     logger.log(Level.DEBUG, clearToken);
-                    return false;
+                    return  response;
+
+
                 }
             }
         }
-        return true;
+        return new InternalResponse(null, true);
     }
 
 

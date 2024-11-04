@@ -6,6 +6,6 @@ import com.swanhtetaungphyo.article_approval.utils.ArticleProcessResp;
 import java.io.IOException;
 
 public interface ArticleServices {
-    ArticleProcessResp CreateArticle(ArticleDto articleDto) throws IOException;
+   void CreateArticle(ArticleDto articleDto) throws IOException;
    ArticleProcessResp ProcessArticles(ArticleDto articleDto) throws IOException;
 }

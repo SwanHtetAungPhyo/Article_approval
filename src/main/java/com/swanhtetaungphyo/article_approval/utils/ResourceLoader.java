@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 
 @Component
@@ -21,8 +22,10 @@ public class ResourceLoader {
 
     public static HashSet<String> LoadSwearWordFromFile() throws FileNotFoundException {
         HashSet<String> hashSet = new HashSet<>();
+        Pattern regexPattern = Pattern.compile("\"(.*?)\",?");
         try{
             Files.lines(Path.of(FilePath))
+                    .map(line -> regexPattern.matcher(line).replaceAll("$1"))
                     .map(String::trim)
                     .map(String::toLowerCase)
                     .filter(line -> !line.isEmpty())
