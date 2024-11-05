@@ -27,6 +27,9 @@ jobs:
         java-version: '22'
         distribution: 'temurin'
         cache: maven
+    - name: Docker Compose Action
+      uses: hoverkraft-tech/compose-action@v2.0.2
+            
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
